@@ -8,7 +8,7 @@ import { DailySummary } from '@/components/daily-summary';
 import { ManualEntry } from '@/components/manual-entry';
 import { EntriesList } from '@/components/entries-list';
 import { HistorySection } from '@/components/history-section';
-import { AuthForm } from '@/components/auth-form';
+import { AuthDialog } from '@/components/auth-dialog';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { getFoodLogs, addFoodLog, deleteFoodLog, updateFoodLog, getGoals, updateGoals, getHistory } from './actions';
@@ -34,9 +34,6 @@ interface DayData {
   protein: number;
   entries: FoodEntry[];
 }
-
-
-
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -117,11 +114,8 @@ export default function Home() {
     entries: todayEntries,
   };
 
-
-
   const handleFoodAdded = async (food: any) => {
     const newEntry = { ...food, date: viewDate };
-
     // Optimistic
     setTodayEntries(prev => [...prev, newEntry]);
 
@@ -198,100 +192,115 @@ export default function Home() {
     handleDateSelect(next);
   };
 
+  useEffect(() => {
+    if (!loading && !user) {
+      // Force auth dialog open if not logged in
+      // We don't have a direct setter here for the controlled dialog in this scope unless we add state
+      // But we can conditionally render the Dialog with open={true} wrapped around a dummy trigger or just purely controlled.
+    }
+  }, [loading, user]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  if (!user) {
-    return <AuthForm />;
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-1 sm:px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Caltra Logo"
-                width={300}
-                height={112}
-                className="h-28 w-auto"
-                priority
-              />
-            </div>
-            <Button variant="ghost" onClick={() => supabase.auth.signOut()}>Sign Out</Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50 relative">
+      {/* Auth Popup if not logged in */}
+      {!user && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <AuthDialog open={true} onOpenChange={() => { }} />
         </div>
-      </header>
+      )}
 
-      <main className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="log">Log</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="log" className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <Button variant="ghost" size="icon" onClick={handlePrevDay}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <DatePicker
-                  date={parseISO(viewDate)}
-                  onSelect={handleDateSelect}
+      <div className={!user ? 'blur-sm pointer-events-none' : ''}>
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-6xl mx-auto px-4 py-1 sm:px-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="Caltra Logo"
+                  width={300}
+                  height={112}
+                  className="h-28 w-auto"
+                  priority
                 />
-                {viewDate === today && (
-                  <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                    Today
-                  </span>
-                )}
               </div>
-              <Button variant="ghost" size="icon" onClick={handleNextDay}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              {user && (
+                <Button variant="ghost" onClick={() => supabase.auth.signOut()}>Sign Out</Button>
+              )}
             </div>
-            <DailySummary
-              calorieGoal={calorieGoal}
-              proteinGoal={proteinGoal}
-              caloriesConsumed={todayData.calories}
-              proteinConsumed={todayData.protein}
-              onCalorieGoalChange={(c) => handleGoalsChange(c, proteinGoal)}
-              onProteinGoalChange={(p) => handleGoalsChange(calorieGoal, p)}
-            />
+          </div>
+        </header>
+
+        <main className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="log">Log</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="log" className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <Button variant="ghost" size="icon" onClick={handlePrevDay}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-2">
+                  <DatePicker
+                    date={parseISO(viewDate)}
+                    onSelect={handleDateSelect}
+                  />
+                  {viewDate === today && (
+                    <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                      Today
+                    </span>
+                  )}
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleNextDay}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <DailySummary
+                calorieGoal={calorieGoal}
+                proteinGoal={proteinGoal}
+                caloriesConsumed={todayData.calories}
+                proteinConsumed={todayData.protein}
+                onCalorieGoalChange={(c) => handleGoalsChange(c, proteinGoal)}
+                onProteinGoalChange={(p) => handleGoalsChange(calorieGoal, p)}
+              />
 
 
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Food Logging</h2>
-                <FoodDatabaseDialog />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900">Food Logging</h2>
+                  <FoodDatabaseDialog />
+                </div>
+
+                <ManualEntry onFoodAdded={handleFoodAdded} />
               </div>
 
-              <ManualEntry onFoodAdded={handleFoodAdded} />
-            </div>
+              <EntriesList
+                entries={todayEntries}
+                onDeleteEntry={handleDeleteEntry}
+                onUpdateEntry={handleUpdateEntry}
+              />
+            </TabsContent>
 
-            <EntriesList
-              entries={todayEntries}
-              onDeleteEntry={handleDeleteEntry}
-              onUpdateEntry={handleUpdateEntry}
-            />
-          </TabsContent>
-
-          <TabsContent value="history">
-            <HistorySection
-              currentMonth={currentMonth}
-              historyData={historyData}
-              calorieGoal={calorieGoal}
-              proteinGoal={proteinGoal}
-              onEditDate={handleEditDate}
-              onMonthChange={handleMonthChange}
-            />
-          </TabsContent>
-        </Tabs>
-      </main>
+            <TabsContent value="history">
+              <HistorySection
+                currentMonth={currentMonth}
+                historyData={historyData}
+                calorieGoal={calorieGoal}
+                proteinGoal={proteinGoal}
+                onEditDate={handleEditDate}
+                onMonthChange={handleMonthChange}
+              />
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
     </div>
   );
 }
