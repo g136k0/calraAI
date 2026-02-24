@@ -117,7 +117,7 @@ export function FoodDatabaseDialog({ onFoodAdded }: FoodDatabaseDialogProps) {
                                         {item.calories} cal / {item.protein}g protein (per 100g)
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                                     {onFoodAdded && (
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
