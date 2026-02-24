@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getSavedMeals, deleteSavedMeal, updateSavedMeal, SavedMeal } from '@/app/actions';
-import { Trash2, Search, Database, Plus, Edit2, Camera, Loader2 } from 'lucide-react';
+import { Trash2, Search, Database, Plus, Edit2, Camera, Loader2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     DropdownMenu,
