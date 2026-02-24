@@ -154,6 +154,7 @@ export async function updateRoutineExercise(exerciseId: string, exercise: Partia
             name: exercise.name,
             target_sets: exercise.target_sets,
             target_reps: exercise.target_reps,
+            order_index: exercise.order_index
         })
         .eq('id', exerciseId);
 
@@ -161,6 +162,26 @@ export async function updateRoutineExercise(exerciseId: string, exercise: Partia
         console.error('Error updating exercise:', error);
         throw new Error('Failed to update exercise');
     }
+}
+
+export async function reorderRoutineExercises(exerciseAId: string, orderA: number, exerciseBId: string, orderB: number) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error: errorA } = await supabase
+        .from('routine_exercises')
+        .update({ order_index: orderB })
+        .eq('id', exerciseAId);
+
+    if (errorA) throw errorA;
+
+    const { error: errorB } = await supabase
+        .from('routine_exercises')
+        .update({ order_index: orderA })
+        .eq('id', exerciseBId);
+
+    if (errorB) throw errorB;
 }
 
 export async function createWorkout(routineId: string | null, name: string, date: string) {

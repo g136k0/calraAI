@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dumbbell, Plus, X, Edit2 } from "lucide-react";
-import { WorkoutRoutine, RoutineExercise, addExerciseToRoutine, deleteRoutineExercise, updateRoutineExercise } from "@/app/fitness/actions";
+import { Dumbbell, Plus, X, Edit2, ChevronUp, ChevronDown } from "lucide-react";
+import { WorkoutRoutine, RoutineExercise, addExerciseToRoutine, deleteRoutineExercise, updateRoutineExercise, reorderRoutineExercises } from "@/app/fitness/actions";
 
 export function EditRoutineDialog({
     routine,
@@ -79,6 +79,30 @@ export function EditRoutineDialog({
         setExReps(ex.target_reps);
     };
 
+    const handleMove = async (idx: number, direction: 'up' | 'down') => {
+        if (!routine.exercises) return;
+        const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (targetIdx < 0 || targetIdx >= routine.exercises.length) return;
+
+        setLoading(true);
+        const currentEx = routine.exercises[idx];
+        const targetEx = routine.exercises[targetIdx];
+
+        try {
+            await reorderRoutineExercises(
+                currentEx.id,
+                currentEx.order_index,
+                targetEx.id,
+                targetEx.order_index
+            );
+            await onUpdated();
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={(val) => {
             setOpen(val);
@@ -110,6 +134,26 @@ export function EditRoutineDialog({
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-1">
+                                            <div className="flex flex-col mr-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-gray-400 hover:text-blue-600 disabled:opacity-30"
+                                                    onClick={() => handleMove(idx, 'up')}
+                                                    disabled={loading || idx === 0}
+                                                >
+                                                    <ChevronUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-gray-400 hover:text-blue-600 disabled:opacity-30"
+                                                    onClick={() => handleMove(idx, 'down')}
+                                                    disabled={loading || idx === (routine.exercises?.length || 0) - 1}
+                                                >
+                                                    <ChevronDown className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
