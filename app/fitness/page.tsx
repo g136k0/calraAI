@@ -187,9 +187,9 @@ export default function FitnessPage() {
                                 <Image
                                     src="/logo.png"
                                     alt="Caltra Logo"
-                                    width={300}
-                                    height={112}
-                                    className="h-28 w-auto"
+                                    width={120}
+                                    height={40}
+                                    className="h-10 w-auto"
                                     priority
                                 />
                             </div>
