@@ -111,8 +111,8 @@ export function FoodDatabaseDialog({ onFoodAdded }: FoodDatabaseDialogProps) {
                                 key={item.id}
                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group"
                             >
-                                <div>
-                                    <p className="font-medium text-gray-900">{item.name}</p>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-900 leading-tight mb-0.5">{item.name}</p>
                                     <p className="text-xs text-gray-500">
                                         {item.calories} cal / {item.protein}g protein (per 100g)
                                     </p>

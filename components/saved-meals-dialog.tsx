@@ -315,8 +315,8 @@ export function SavedMealsDialog({ onFoodAdded }: SavedMealsDialogProps) {
                                             </div>
                                         )}
 
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-gray-900 truncate">{meal.name}</p>
+                                        <div className="flex-1 min-w-0 py-1">
+                                            <p className="font-medium text-gray-900 leading-tight mb-1">{meal.name}</p>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
                                                     {Math.round(meal.calories)} cal

@@ -129,7 +129,7 @@ export interface SavedMeal {
     description: string;
     calories: number;
     protein: number;
-    image_url?: string;
+    image_url?: string | null;
 }
 
 export async function getSavedMeals(): Promise<SavedMeal[]> {
