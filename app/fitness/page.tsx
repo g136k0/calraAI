@@ -88,6 +88,7 @@ export default function FitnessPage() {
     };
 
     const handleDeleteWorkout = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this scheduled workout?")) return;
         try {
             await deleteWorkout(id);
             await fetchWorkouts();
