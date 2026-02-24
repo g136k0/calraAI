@@ -205,7 +205,8 @@ export async function createWorkout(routineId: string | null, name: string, date
                 if (wEx) {
                     const setsToInsert = [];
                     for (let i = 1; i <= re.target_sets; i++) {
-                        const defaultReps = parseInt(re.target_reps) || null;
+                        const targetRepsPieces = re.target_reps.split('-');
+                        const defaultReps = parseInt(targetRepsPieces[targetRepsPieces.length - 1]) || null;
                         setsToInsert.push({
                             workout_exercise_id: wEx.id,
                             set_number: i,
