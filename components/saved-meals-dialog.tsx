@@ -120,7 +120,6 @@ export function SavedMealsDialog({ onFoodAdded }: SavedMealsDialogProps) {
         try {
             let imageUrl = editingMeal.image_url;
 
-            // If they uploaded a new image, replace tracking URL
             if (imageFile) {
                 const fileExt = imageFile.name.split('.').pop();
                 const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
@@ -135,6 +134,9 @@ export function SavedMealsDialog({ onFoodAdded }: SavedMealsDialogProps) {
                         .getPublicUrl(fileName);
                     imageUrl = publicUrlData.publicUrl;
                 }
+            } else if (imagePreview === null) {
+                // If there's no file and preview is null, it was removed
+                imageUrl = null;
             }
 
             await updateSavedMeal(editingMeal.id, {
@@ -177,16 +179,36 @@ export function SavedMealsDialog({ onFoodAdded }: SavedMealsDialogProps) {
                         <div>
                             <label className="text-sm font-medium text-gray-700 block mb-2">Meal Photo</label>
                             <div
-                                onClick={() => fileInputRef.current?.click()}
                                 className="w-32 h-32 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden relative aspect-square"
                             >
                                 {imagePreview ? (
-                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                ) : (
                                     <>
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        />
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setImagePreview(null);
+                                                setImageFile(null);
+                                            }}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                                            title="Remove photo"
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div
+                                        className="w-full h-full flex flex-col items-center justify-center"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
                                         <Camera className="h-6 w-6 text-gray-400 mb-2" />
                                         <span className="text-xs text-gray-500 text-center px-2">Click to upload photo</span>
-                                    </>
+                                    </div>
                                 )}
                             </div>
                             <input
