@@ -168,7 +168,7 @@ export default function FitnessPage() {
         return acc;
     }, {} as Record<string, [string, number][]>);
 
-    const categoryOrder = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Abs", "Other"];
+    const categoryOrder = ["Chest", "Arms", "Back", "Shoulders", "Legs", "Abs", "Other"];
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50 relative">
