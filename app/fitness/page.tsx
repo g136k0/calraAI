@@ -369,12 +369,14 @@ export default function FitnessPage() {
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                                                            <ActiveWorkoutDialog
-                                                                workout={workout}
-                                                                onUpdated={fetchWorkouts}
-                                                                triggerLayout="button"
-                                                            />
+                                                        <div className="flex items-center gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                                                            <div className="flex-1 sm:flex-initial">
+                                                                <ActiveWorkoutDialog
+                                                                    workout={workout}
+                                                                    onUpdated={fetchWorkouts}
+                                                                    triggerLayout="button"
+                                                                />
+                                                            </div>
                                                             <Button
                                                                 variant="outline"
                                                                 size="icon"
