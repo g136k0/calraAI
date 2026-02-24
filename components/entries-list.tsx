@@ -51,7 +51,7 @@ export function EntriesList({
     }
   };
 
-  const categories = ['Breakfast', 'Dinner', 'Supper', 'Snack'];
+  const categories = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
   const groupedEntries = categories.map((category) => ({
     category,
     items: entries.filter((e) => (e.category || 'Snack') === category),

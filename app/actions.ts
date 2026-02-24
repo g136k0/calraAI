@@ -123,6 +123,86 @@ export async function updateFoodLog(id: string, entry: Partial<FoodEntry>) {
     }
 }
 
+export interface SavedMeal {
+    id: string;
+    name: string;
+    description: string;
+    calories: number;
+    protein: number;
+    image_url?: string;
+}
+
+export async function getSavedMeals(): Promise<SavedMeal[]> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from('saved_meals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching saved meals:', error);
+        return [];
+    }
+    return data;
+}
+
+export async function addSavedMeal(meal: Omit<SavedMeal, 'id'>) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase.from('saved_meals').insert({
+        user_id: user.id,
+        name: meal.name,
+        description: meal.description,
+        calories: meal.calories,
+        protein: meal.protein,
+        image_url: meal.image_url,
+    });
+
+    if (error) {
+        console.error('Error adding saved meal:', error);
+        throw new Error('Failed to save meal');
+    }
+}
+
+export async function deleteSavedMeal(id: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('saved_meals').delete().eq('id', id);
+    if (error) {
+        console.error('Error deleting saved meal:', error);
+        throw new Error('Failed to delete saved meal');
+    }
+}
+
+export async function updateSavedMeal(id: string, meal: Partial<Omit<SavedMeal, 'id'>>) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const updateData: any = {};
+    if (meal.name !== undefined) updateData.name = meal.name;
+    if (meal.description !== undefined) updateData.description = meal.description;
+    if (meal.calories !== undefined) updateData.calories = meal.calories;
+    if (meal.protein !== undefined) updateData.protein = meal.protein;
+    if (meal.image_url !== undefined) updateData.image_url = meal.image_url;
+
+    const { error } = await supabase
+        .from('saved_meals')
+        .update(updateData)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error('Error updating saved meal:', error);
+        throw new Error('Failed to update saved meal');
+    }
+}
+
 export async function getGoals() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

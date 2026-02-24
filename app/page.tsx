@@ -16,6 +16,8 @@ import { User } from '@supabase/supabase-js';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DatePicker } from '@/components/date-picker';
 import { FoodDatabaseDialog } from '@/components/food-database-dialog';
+import { LogMeals } from '@/components/log-meals';
+import { SavedMealsDialog } from '@/components/saved-meals-dialog';
 
 // Re-export interface to match actions
 export interface FoodEntry {
@@ -115,7 +117,8 @@ export default function Home() {
   };
 
   const handleFoodAdded = async (food: any) => {
-    const newEntry = { ...food, date: viewDate };
+    const tempId = food.id || crypto.randomUUID();
+    const newEntry = { ...food, id: tempId, date: viewDate };
     // Optimistic
     setTodayEntries(prev => [...prev, newEntry]);
 
@@ -135,7 +138,7 @@ export default function Home() {
     } catch (error) {
       console.error('Failed to persist food log:', error);
       // Revert optimistic update
-      setTodayEntries(prev => prev.filter(e => e.id !== food.id));
+      setTodayEntries(prev => prev.filter(e => e.id !== tempId));
       throw error; // Rethrow for component handling
     }
   };
@@ -275,17 +278,28 @@ export default function Home() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-gray-900">Food Logging</h2>
-                  <FoodDatabaseDialog />
+                  <FoodDatabaseDialog onFoodAdded={handleFoodAdded} />
                 </div>
 
                 <ManualEntry onFoodAdded={handleFoodAdded} />
               </div>
 
-              <EntriesList
-                entries={todayEntries}
-                onDeleteEntry={handleDeleteEntry}
-                onUpdateEntry={handleUpdateEntry}
-              />
+              <div className="space-y-4 pt-6 border-t border-gray-100 mt-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900">Log Meals</h2>
+                  <SavedMealsDialog onFoodAdded={handleFoodAdded} />
+                </div>
+                <LogMeals onFoodAdded={handleFoodAdded} />
+              </div>
+
+              <div className="pt-6 border-t border-gray-100 mt-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Today's Log</h2>
+                <EntriesList
+                  entries={todayEntries}
+                  onDeleteEntry={handleDeleteEntry}
+                  onUpdateEntry={handleUpdateEntry}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="history">

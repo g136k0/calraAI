@@ -6,12 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { searchFoodItems, saveFoodItem, FoodItem } from '@/app/actions';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface DetectedFood {
   id: string;
@@ -126,7 +125,7 @@ export function ManualEntry({ onFoodAdded }: ManualEntryProps) {
     };
   };
 
-  const handleAdd = async () => {
+  const handleAdd = async (selectedCategory: string) => {
     setLoading(true);
     try {
       if (manualMode) {
@@ -138,7 +137,7 @@ export function ManualEntry({ onFoodAdded }: ManualEntryProps) {
           weight: parseInt(weight) || 0,
           calories: nutrients.calories,
           protein: nutrients.protein,
-          category,
+          category: selectedCategory,
         };
 
         await onFoodAdded(foodData);
@@ -159,7 +158,7 @@ export function ManualEntry({ onFoodAdded }: ManualEntryProps) {
           weight: weightNum,
           calories: nutrients.calories,
           protein: nutrients.protein,
-          category,
+          category: selectedCategory,
         };
 
         await onFoodAdded(foodData);
@@ -283,40 +282,32 @@ export function ManualEntry({ onFoodAdded }: ManualEntryProps) {
                 />
               </div>
             </div>
-            {/* Weight and Category Selection */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Weight (g)</label>
-                <Input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Meal</label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select meal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Breakfast">Breakfast</SelectItem>
-                    <SelectItem value="Dinner">Dinner</SelectItem>
-                    <SelectItem value="Supper">Supper</SelectItem>
-                    <SelectItem value="Snack">Snack</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Weight (g)</label>
+              <Input
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                className="text-sm"
+              />
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={handleAdd}
-                disabled={loading || !foodName || !manualCalories || !manualProtein}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                {loading ? 'Adding...' : 'Add Entry'}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    disabled={loading || !foodName || !manualCalories || !manualProtein}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {loading ? 'Adding...' : 'Add Entry'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleAdd('Breakfast')}>Breakfast</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdd('Lunch')}>Lunch</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdd('Dinner')}>Dinner</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdd('Snack')}>Snack</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button onClick={resetForm} variant="outline" className="flex-1">
                 Cancel
               </Button>
@@ -333,30 +324,14 @@ export function ManualEntry({ onFoodAdded }: ManualEntryProps) {
                 {analyzedFood.caloriesPer100g} cal / {analyzedFood.proteinPer100g}g protein per 100g
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Weight (g)</label>
-                <Input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Meal</label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select meal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Breakfast">Breakfast</SelectItem>
-                    <SelectItem value="Dinner">Dinner</SelectItem>
-                    <SelectItem value="Supper">Supper</SelectItem>
-                    <SelectItem value="Snack">Snack</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Weight (g)</label>
+              <Input
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                className="text-sm"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg">
               <div>
@@ -369,13 +344,22 @@ export function ManualEntry({ onFoodAdded }: ManualEntryProps) {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={handleAdd}
-                disabled={loading}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                {loading ? 'Adding...' : 'Add to Log'}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    disabled={loading}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {loading ? 'Adding...' : 'Add to Log'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleAdd('Breakfast')}>Breakfast</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdd('Lunch')}>Lunch</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdd('Dinner')}>Dinner</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAdd('Snack')}>Snack</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button onClick={resetForm} variant="outline" className="flex-1">
                 Cancel
               </Button>

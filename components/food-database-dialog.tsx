@@ -11,9 +11,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getFoodItems, deleteFoodItem, FoodItem } from '@/app/actions';
-import { Trash2, Search, Database } from 'lucide-react';
+import { Trash2, Search, Database, Plus } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-export function FoodDatabaseDialog() {
+interface FoodDatabaseDialogProps {
+    onFoodAdded?: (food: any) => Promise<void>;
+}
+
+export function FoodDatabaseDialog({ onFoodAdded }: FoodDatabaseDialogProps) {
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState<FoodItem[]>([]);
     const [search, setSearch] = useState('');
@@ -30,6 +40,26 @@ export function FoodDatabaseDialog() {
         const data = await getFoodItems();
         setItems(data);
         setLoading(false);
+    };
+
+    const handleAdd = async (item: FoodItem, category: string) => {
+        if (!onFoodAdded) return;
+        setLoading(true);
+        try {
+            await onFoodAdded({
+                name: item.name,
+                weight: item.serving_size,
+                calories: Math.round((item.calories / 100) * item.serving_size),
+                protein: Math.round((item.protein / 100) * item.serving_size * 10) / 10,
+                category: category,
+            });
+            setOpen(false); // Optionally close on add, or keep open. Let's close it so user sees it in today's log.
+        } catch (error) {
+            console.error('Failed to add food:', error);
+            alert('Failed to log food.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -87,14 +117,45 @@ export function FoodDatabaseDialog() {
                                         {item.calories} cal / {item.protein}g protein (per 100g)
                                     </p>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => handleDelete(item.id)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {onFoodAdded && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                    disabled={loading}
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleAdd(item, 'Breakfast')}>
+                                                    Breakfast
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleAdd(item, 'Lunch')}>
+                                                    Lunch
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleAdd(item, 'Dinner')}>
+                                                    Dinner
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleAdd(item, 'Snack')}>
+                                                    Snack
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                        onClick={() => handleDelete(item.id)}
+                                        disabled={loading}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         ))
                     )}
