@@ -82,7 +82,7 @@ export default function DashboardPage() {
                         </p>
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2">
+                    <div className="grid gap-3 grid-cols-2 sm:gap-6">
                         <Card className="shadow-sm border-orange-100 bg-gradient-to-br from-orange-50/50 to-white hover:shadow-md transition-shadow">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm font-medium text-orange-600 flex items-center gap-2">
@@ -90,12 +90,12 @@ export default function DashboardPage() {
                                     Current Streak
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-4xl font-bold text-gray-900">
-                                    {stats.currentStreak} <span className="text-lg font-medium text-gray-500">days</span>
+                            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                                <div className="text-2xl sm:text-4xl font-bold text-gray-900 break-words line-clamp-1">
+                                    {stats.currentStreak} <span className="text-sm sm:text-lg font-medium text-gray-500">days</span>
                                 </div>
-                                <p className="mt-1 text-xs text-orange-600/80 font-medium">
-                                    Keep it up! Consistency is key.
+                                <p className="mt-1 text-[10px] leading-tight sm:text-xs text-orange-600/80 font-medium">
+                                    Keep it up!
                                 </p>
                             </CardContent>
                         </Card>
@@ -107,12 +107,12 @@ export default function DashboardPage() {
                                     7-Day Average
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-4xl font-bold text-gray-900">
-                                    {stats.weeklyAverageCalories} <span className="text-lg font-medium text-gray-500">cal/day</span>
+                            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                                <div className="text-2xl sm:text-4xl font-bold text-gray-900 break-words line-clamp-1">
+                                    {stats.weeklyAverageCalories} <span className="text-sm sm:text-lg font-medium text-gray-500">cal/day</span>
                                 </div>
-                                <p className="mt-1 text-xs text-blue-600/80 font-medium">
-                                    Your average consumption over the last week.
+                                <p className="mt-1 text-[10px] leading-tight sm:text-xs text-blue-600/80 font-medium">
+                                    Average consumption.
                                 </p>
                             </CardContent>
                         </Card>
