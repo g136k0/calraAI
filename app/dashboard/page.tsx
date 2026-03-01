@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getDashboardStats } from "../actions";
-import { Flame, Activity, LayoutDashboard, Loader2 } from "lucide-react";
+import { Flame, Activity, LayoutDashboard, Loader2, Bell } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,68 @@ export default function DashboardPage() {
     const [stats, setStats] = useState({ currentStreak: 0, weeklyAverageCalories: 0, weeklyAverageProtein: 0 });
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
+    const [pushStatus, setPushStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+    const urlBase64ToUint8Array = (base64String: string) => {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    };
+
+    const subscribeToPush = async () => {
+        try {
+            setPushStatus('loading');
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                alert('Push notifications are not supported by your browser.');
+                setPushStatus('error');
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            const permission = await Notification.requestPermission();
+
+            if (permission !== 'granted') {
+                alert('Notification permission denied');
+                setPushStatus('error');
+                return;
+            }
+
+            const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+            if (!vapidPublicKey) {
+                console.error("VAPID public key not found in env.");
+                setPushStatus('error');
+                return;
+            }
+
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+
+            const res = await fetch('/api/web-push', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'subscribe', subscription })
+            });
+
+            if (res.ok) {
+                setPushStatus('success');
+            } else {
+                console.error('Failed to save subscription');
+                setPushStatus('error');
+            }
+        } catch (error) {
+            console.error('Error subscribing to push:', error);
+            setPushStatus('error');
+        }
+    };
 
     useEffect(() => {
         const fetchUserAndStats = async () => {
@@ -116,6 +178,30 @@ export default function DashboardPage() {
                                         {stats.weeklyAverageProtein} <span className="text-sm sm:text-lg font-medium text-gray-500">g pro</span>
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="mt-8">
+                        <Card className="shadow-sm border-gray-200">
+                            <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-blue-100 p-2 rounded-full">
+                                        <Bell className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">Daily Reminders</h3>
+                                        <p className="text-sm text-gray-500">Enable push notifications to never forget logging your calories.</p>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={subscribeToPush}
+                                    disabled={pushStatus === 'loading' || pushStatus === 'success'}
+                                    className={`${pushStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white w-full sm:w-auto`}
+                                >
+                                    {pushStatus === 'loading' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                    {pushStatus === 'success' ? 'Enabled' : 'Enable Notifications'}
+                                </Button>
                             </CardContent>
                         </Card>
                     </div>
