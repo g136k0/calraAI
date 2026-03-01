@@ -27,10 +27,15 @@ export function DailySummary({
   const [tempCalorie, setTempCalorie] = useState(calorieGoal.toString());
   const [tempProtein, setTempProtein] = useState(proteinGoal.toString());
 
-  const caloriePercentage = Math.min((caloriesConsumed / calorieGoal) * 100, 100);
-  const proteinPercentage = Math.min((proteinConsumed / proteinGoal) * 100, 100);
-  const caloriesOver = Math.max(0, caloriesConsumed - calorieGoal);
-  const proteinOver = Math.max(0, proteinConsumed - proteinGoal);
+  const round1 = (num: number) => Math.round(num * 10) / 10;
+
+  const calCons = Math.round(caloriesConsumed);
+  const proCons = round1(proteinConsumed);
+
+  const caloriePercentage = Math.min((calCons / calorieGoal) * 100, 100);
+  const proteinPercentage = Math.min((proCons / proteinGoal) * 100, 100);
+  const caloriesOver = Math.max(0, calCons - calorieGoal);
+  const proteinOver = round1(Math.max(0, proCons - proteinGoal));
 
   const handleCalorieSave = () => {
     const val = parseInt(tempCalorie);
@@ -89,7 +94,7 @@ export function DailySummary({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-lg font-bold text-gray-900">
-                  {caloriesConsumed} kcal
+                  {calCons} kcal
                 </span>
                 {caloriesOver > 0 && (
                   <span className="text-sm font-medium text-red-600">
@@ -138,11 +143,11 @@ export function DailySummary({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-lg font-bold text-gray-900">
-                  {proteinConsumed} g
+                  {proCons} g
                 </span>
                 {proteinOver > 0 && (
                   <span className="text-sm font-medium text-red-600">
-                    Over by {proteinOver}
+                    Over by {proteinOver}g
                   </span>
                 )}
               </div>

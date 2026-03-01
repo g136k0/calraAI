@@ -127,9 +127,9 @@ export function HistorySection({
                   {dayData && (
                     <div className="text-xs mt-1">
                       <div className={calorieLabelColor(dayData.calories)}>
-                        {dayData.calories} kcal
+                        {Math.round(dayData.calories)} kcal
                       </div>
-                      <div className="text-gray-600">{dayData.protein}g P</div>
+                      <div className="text-gray-600">{Math.round(dayData.protein * 10) / 10}g P</div>
                     </div>
                   )}
                 </button>
@@ -203,11 +203,11 @@ export function HistorySection({
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700">
-                        Calories: {selectedDayData.calories} / {calorieGoal}
+                        Calories: {Math.round(selectedDayData.calories)} / {calorieGoal}
                       </span>
                       {selectedDayData.calories > calorieGoal && (
                         <span className="text-sm font-medium text-red-600">
-                          Over by {selectedDayData.calories - calorieGoal}
+                          Over by {Math.round(selectedDayData.calories - calorieGoal)}
                         </span>
                       )}
                     </div>
@@ -223,11 +223,11 @@ export function HistorySection({
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700">
-                        Protein: {selectedDayData.protein} / {proteinGoal}g
+                        Protein: {Math.round(selectedDayData.protein * 10) / 10} / {proteinGoal}g
                       </span>
                       {selectedDayData.protein > proteinGoal && (
                         <span className="text-sm font-medium text-red-600">
-                          Over by {selectedDayData.protein - proteinGoal}g
+                          Over by {Math.round((selectedDayData.protein - proteinGoal) * 10) / 10}g
                         </span>
                       )}
                     </div>
