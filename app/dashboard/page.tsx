@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
     const supabase = createClient();
-    const [stats, setStats] = useState({ currentStreak: 0, weeklyAverageCalories: 0 });
+    const [stats, setStats] = useState({ currentStreak: 0, weeklyAverageCalories: 0, weeklyAverageProtein: 0 });
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
 
@@ -108,12 +108,14 @@ export default function DashboardPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                                <div className="text-2xl sm:text-4xl font-bold text-gray-900 break-words line-clamp-1">
-                                    {stats.weeklyAverageCalories} <span className="text-sm sm:text-lg font-medium text-gray-500">cal/day</span>
+                                <div className="space-y-1">
+                                    <div className="text-2xl sm:text-4xl font-bold text-gray-900 break-words line-clamp-1">
+                                        {stats.weeklyAverageCalories} <span className="text-sm sm:text-lg font-medium text-gray-500">cal</span>
+                                    </div>
+                                    <div className="text-lg sm:text-2xl font-bold text-gray-900 break-words line-clamp-1">
+                                        {stats.weeklyAverageProtein} <span className="text-sm sm:text-lg font-medium text-gray-500">g pro</span>
+                                    </div>
                                 </div>
-                                <p className="mt-1 text-[10px] leading-tight sm:text-xs text-blue-600/80 font-medium">
-                                    Average consumption.
-                                </p>
                             </CardContent>
                         </Card>
                     </div>

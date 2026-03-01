@@ -390,16 +390,16 @@ export async function getDashboardStats() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return { currentStreak: 0, weeklyAverageCalories: 0 };
+    if (!user) return { currentStreak: 0, weeklyAverageCalories: 0, weeklyAverageProtein: 0 };
 
     const { data, error } = await supabase
         .from('food_logs')
-        .select('eaten_at, calories')
+        .select('eaten_at, calories, protein')
         .eq('user_id', user.id)
         .order('eaten_at', { ascending: false });
 
     if (error || !data || data.length === 0) {
-        return { currentStreak: 0, weeklyAverageCalories: 0 };
+        return { currentStreak: 0, weeklyAverageCalories: 0, weeklyAverageProtein: 0 };
     }
 
     const dates = data.map(log => {
@@ -452,12 +452,15 @@ export async function getDashboardStats() {
     const uniqueDaysWithLogs = new Set(last7DaysData.map(log => log.eaten_at ? log.eaten_at.split('T')[0] : ''));
 
     let totalCalories = 0;
+    let totalProtein = 0;
     for (const log of last7DaysData) {
         totalCalories += log.calories || 0;
+        totalProtein += log.protein || 0;
     }
 
     const divisor = uniqueDaysWithLogs.size || 1; // avoid division by zero
     const weeklyAverageCalories = uniqueDaysWithLogs.size > 0 ? Math.round(totalCalories / divisor) : 0;
+    const weeklyAverageProtein = uniqueDaysWithLogs.size > 0 ? Math.round(totalProtein / divisor) : 0;
 
-    return { currentStreak, weeklyAverageCalories };
+    return { currentStreak, weeklyAverageCalories, weeklyAverageProtein };
 }
