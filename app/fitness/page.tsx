@@ -14,6 +14,7 @@ import { CreateRoutineDialog } from "@/components/create-routine-dialog";
 import { EditRoutineDialog } from "@/components/edit-routine-dialog";
 import { ScheduleWorkoutDialog } from "@/components/schedule-workout-dialog";
 import { ActiveWorkoutDialog } from "@/components/active-workout-dialog";
+import { Header } from "@/components/header";
 import { getRoutines, createRoutine, WorkoutRoutine, getWorkouts, createWorkout, deleteWorkout, deleteRoutine } from "./actions";
 
 export default function FitnessPage() {
@@ -181,27 +182,7 @@ export default function FitnessPage() {
             )}
 
             <div className={!user ? "blur-sm pointer-events-none" : ""}>
-                <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-                    <div className="max-w-6xl mx-auto px-4 py-3 sm:px-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Image
-                                    src="/logo.png"
-                                    alt="Caltra Logo"
-                                    width={120}
-                                    height={40}
-                                    className="h-10 w-auto"
-                                    priority
-                                />
-                            </div>
-                            {user && (
-                                <Button variant="ghost" onClick={() => supabase.auth.signOut()}>
-                                    Sign Out
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                </header>
+                <Header />
 
                 <main className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
                     <div className="flex items-center justify-between mb-6">
