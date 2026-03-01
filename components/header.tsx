@@ -16,6 +16,7 @@ export function Header() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const [name, setName] = useState("")
     const [avatarUrl, setAvatarUrl] = useState("")
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
     const [pushStatus, setPushStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
     const [isSaving, setIsSaving] = useState(false)
 
@@ -47,14 +48,39 @@ export function Header() {
     const handleSaveProfile = async () => {
         setIsSaving(true)
         try {
+            let finalAvatarUrl = avatarUrl;
+            if (avatarFile && user) {
+                const fileExt = avatarFile.name.split('.').pop();
+                const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+                const filePath = `public/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('avatars')
+                    .upload(filePath, avatarFile);
+
+                if (uploadError) {
+                    throw uploadError;
+                }
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath);
+
+                finalAvatarUrl = publicUrl;
+            }
+
             const { error } = await supabase.auth.updateUser({
                 data: {
                     full_name: name,
-                    avatar_url: avatarUrl
+                    avatar_url: finalAvatarUrl
                 }
             })
             if (!error) {
-                setIsSettingsOpen(false)
+                setAvatarUrl(finalAvatarUrl);
+                setAvatarFile(null);
+                setIsSettingsOpen(false);
+            } else {
+                console.error("Failed to update profile", error)
             }
         } catch (error) {
             console.error("Failed to update profile", error)
@@ -189,13 +215,25 @@ export function Header() {
                                                 />
                                             </div>
                                             <div className="grid gap-2">
-                                                <Label htmlFor="avatarUrl">Profile Picture URL</Label>
-                                                <Input
-                                                    id="avatarUrl"
-                                                    value={avatarUrl}
-                                                    onChange={(e) => setAvatarUrl(e.target.value)}
-                                                    placeholder="https://example.com/avatar.jpg"
-                                                />
+                                                <Label htmlFor="avatarFile">Profile Picture</Label>
+                                                <div className="flex items-center gap-4 mt-1">
+                                                    <Avatar className="h-16 w-16">
+                                                        <AvatarImage src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl} alt={name || "User"} className="object-cover" />
+                                                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                                                            <User className="h-8 w-8" />
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <Input
+                                                        id="avatarFile"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            if (e.target.files && e.target.files.length > 0) {
+                                                                setAvatarFile(e.target.files[0]);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
                                             </div>
                                             <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full">
                                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
