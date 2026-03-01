@@ -439,22 +439,25 @@ export async function getDashboardStats() {
         }
     }
 
-    // Weekly average
-    const sevenDaysAgo = new Date(today);
+    // Weekly average (previous 7 days, excluding today)
+    const sevenDaysAgo = new Date(yesterday);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
 
     const last7DaysData = data.filter(log => {
         const d = log.eaten_at ? log.eaten_at.split('T')[0] : '';
-        return d > sevenDaysAgoStr && d <= todayStr;
+        return d > sevenDaysAgoStr && d <= yesterdayStr;
     });
+
+    const uniqueDaysWithLogs = new Set(last7DaysData.map(log => log.eaten_at ? log.eaten_at.split('T')[0] : ''));
 
     let totalCalories = 0;
     for (const log of last7DaysData) {
         totalCalories += log.calories || 0;
     }
 
-    const weeklyAverageCalories = Math.round(totalCalories / 7);
+    const divisor = uniqueDaysWithLogs.size || 1; // avoid division by zero
+    const weeklyAverageCalories = uniqueDaysWithLogs.size > 0 ? Math.round(totalCalories / divisor) : 0;
 
     return { currentStreak, weeklyAverageCalories };
 }
