@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: 'Caltra - Smart Calorie & Protein Tracker',
   description: 'AI-powered food logging and calorie tracking',
   generator: 'v0.app',
+  manifest: '/manifest.json',
 
   icons: {
     icon: [

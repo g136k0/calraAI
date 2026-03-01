@@ -32,20 +32,21 @@ export default function DashboardPage() {
     const subscribeToPush = async () => {
         try {
             setPushStatus('loading');
-            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                alert('Push notifications are not supported by your browser.');
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+                alert('Push notifications are not supported by your browser or iOS device (requires adding to Home Screen first!).');
+                setPushStatus('error');
+                return;
+            }
+
+            // iOS requires permission request to happen BEFORE any async boundary (like registering the SW)
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                alert('Notification permission denied or ignored. You might need to check your system settings.');
                 setPushStatus('error');
                 return;
             }
 
             const registration = await navigator.serviceWorker.register('/sw.js');
-            const permission = await Notification.requestPermission();
-
-            if (permission !== 'granted') {
-                alert('Notification permission denied');
-                setPushStatus('error');
-                return;
-            }
 
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
             if (!vapidPublicKey) {
