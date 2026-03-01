@@ -386,3 +386,75 @@ export async function getHistory(month: number, year: number) {
     return history;
 }
 
+export async function getDashboardStats() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { currentStreak: 0, weeklyAverageCalories: 0 };
+
+    const { data, error } = await supabase
+        .from('food_logs')
+        .select('eaten_at, calories')
+        .eq('user_id', user.id)
+        .order('eaten_at', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+        return { currentStreak: 0, weeklyAverageCalories: 0 };
+    }
+
+    const dates = data.map(log => {
+        if (!log.eaten_at) return '';
+        return log.eaten_at.split('T')[0];
+    }).filter(d => d !== '');
+
+    const uniqueDates = [...new Set(dates)].sort((a, b) => b.localeCompare(a));
+
+    let currentStreak = 0;
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Convert to YYYY-MM-DD
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+    let checkDateStr = '';
+
+    if (uniqueDates[0] === todayStr || uniqueDates[0] === yesterdayStr) {
+        currentStreak = 1;
+        checkDateStr = uniqueDates[0];
+
+        for (let i = 1; i < uniqueDates.length; i++) {
+            // Calculate previous day by subtracting 86400000ms from midnight UTC
+            const prevTime = new Date(checkDateStr + "T00:00:00Z").getTime() - 86400000;
+            const prevDate = new Date(prevTime);
+            const expectedPrevStr = `${prevDate.getUTCFullYear()}-${String(prevDate.getUTCMonth() + 1).padStart(2, '0')}-${String(prevDate.getUTCDate()).padStart(2, '0')}`;
+
+            if (uniqueDates[i] === expectedPrevStr) {
+                currentStreak++;
+                checkDateStr = uniqueDates[i];
+            } else {
+                break;
+            }
+        }
+    }
+
+    // Weekly average
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
+
+    const last7DaysData = data.filter(log => {
+        const d = log.eaten_at ? log.eaten_at.split('T')[0] : '';
+        return d > sevenDaysAgoStr && d <= todayStr;
+    });
+
+    let totalCalories = 0;
+    for (const log of last7DaysData) {
+        totalCalories += log.calories || 0;
+    }
+
+    const weeklyAverageCalories = Math.round(totalCalories / 7);
+
+    return { currentStreak, weeklyAverageCalories };
+}
